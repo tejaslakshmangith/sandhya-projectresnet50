@@ -25,12 +25,20 @@ _transform = transforms.Compose([
                          std=[0.229, 0.224, 0.225]),
 ])
 
-# ── Load model once at module level ───────────────────────────────────────────
-_model = SmartMineResNet50(num_classes=len(CLASS_NAMES))
-_model.load_state_dict(
-    torch.load(MODEL_WEIGHTS, map_location=torch.device("cpu"))
-)
-_model.eval()
+# ── Lazy model loader ─────────────────────────────────────────────────────────
+_model = None
+
+
+def _load_model() -> SmartMineResNet50:
+    """Load and cache the model on first call."""
+    global _model
+    if _model is None:
+        _model = SmartMineResNet50(num_classes=len(CLASS_NAMES))
+        _model.load_state_dict(
+            torch.load(MODEL_WEIGHTS, map_location=torch.device("cpu"))
+        )
+        _model.eval()
+    return _model
 
 
 def predict_image(image_path: str) -> dict:
@@ -45,11 +53,13 @@ def predict_image(image_path: str) -> dict:
             - "class"      : predicted class label (str)
             - "confidence" : prediction confidence (float, 0-1)
     """
+    model = _load_model()
+
     image = Image.open(image_path).convert("RGB")
     tensor = _transform(image).unsqueeze(0)          # shape: [1, 3, 224, 224]
 
     with torch.no_grad():
-        outputs = _model(tensor)
+        outputs = model(tensor)
         probs   = torch.softmax(outputs, dim=1)
 
     confidence, pred_idx = torch.max(probs, 1)

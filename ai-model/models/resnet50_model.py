@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision import models
+from torchvision.models import ResNet50_Weights
 
 
 class SmartMineResNet50(nn.Module):
@@ -12,8 +13,8 @@ class SmartMineResNet50(nn.Module):
     def __init__(self, num_classes: int):
         super(SmartMineResNet50, self).__init__()
 
-        # Load pretrained ResNet-50
-        self.model = models.resnet50(pretrained=True)
+        # Load pretrained ResNet-50 using the recommended weights API
+        self.model = models.resnet50(weights=ResNet50_Weights.DEFAULT)
 
         # Freeze all backbone layers for transfer learning
         for param in self.model.parameters():
