@@ -8,6 +8,7 @@ Usage:
 """
 
 import torch
+from pathlib import Path
 from PIL import Image
 from torchvision import transforms
 
@@ -15,7 +16,8 @@ from models.resnet50_model import SmartMineResNet50
 
 # ── Configuration ─────────────────────────────────────────────────────────────
 CLASS_NAMES   = ["safe", "unsafe"]
-MODEL_WEIGHTS = "models/resnet50_smartmine.pth"
+# Resolve the weights path relative to this file so it works from any cwd
+MODEL_WEIGHTS = Path(__file__).resolve().parent / "models" / "resnet50_smartmine.pth"
 
 # ── Transform ─────────────────────────────────────────────────────────────────
 _transform = transforms.Compose([
@@ -35,7 +37,7 @@ def _load_model() -> SmartMineResNet50:
     if _model is None:
         _model = SmartMineResNet50(num_classes=len(CLASS_NAMES))
         _model.load_state_dict(
-            torch.load(MODEL_WEIGHTS, map_location=torch.device("cpu"))
+            torch.load(str(MODEL_WEIGHTS), map_location=torch.device("cpu"))
         )
         _model.eval()
     return _model

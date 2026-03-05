@@ -16,6 +16,9 @@ export default function HomePage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Revoke the previous object URL to avoid memory leaks
+    if (preview) URL.revokeObjectURL(preview);
+
     setPreview(URL.createObjectURL(file));
     setResult(null);
     setError(null);

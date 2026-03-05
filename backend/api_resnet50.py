@@ -11,14 +11,15 @@ Endpoints:
 
 import os
 import shutil
+import sys
 import tempfile
+from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
-# Add the ai-model directory to path so inference_resnet50 can be imported
-import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "ai-model"))
+# Resolve the ai-model directory absolutely so imports work from any cwd
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "ai-model"))
 
 from inference_resnet50 import predict_image  # noqa: E402
 
@@ -58,7 +59,8 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="File must be an image.")
 
     # Save upload to a temporary file
-    suffix = os.path.splitext(file.filename)[-1] or ".jpg"
+    filename = file.filename or "upload"
+    suffix = os.path.splitext(filename)[-1] or ".jpg"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         shutil.copyfileobj(file.file, tmp)
         tmp_path = tmp.name
