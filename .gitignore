@@ -5,3 +5,9 @@ coverage/
 *.log
 .env*
 !.env.example
+tsconfig.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+*.pth
